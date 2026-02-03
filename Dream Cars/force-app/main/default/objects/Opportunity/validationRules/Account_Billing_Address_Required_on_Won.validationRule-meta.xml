@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account_Billing_Address_Required_on_Won</fullName>
+    <active>true</active>
+    <description>Ensure that an Opportunity can only be marked
+as Close Won if the associated Account has a billing address
+populated.</description>
+    <errorConditionFormula>ISPICKVAL(StageName, &quot;Closed Won&quot;) &amp;&amp; 
+ISBLANK(Account.BillingStreet)</errorConditionFormula>
+    <errorDisplayField>StageName</errorDisplayField>
+    <errorMessage>To close this Opportunity as Won, please ensure the associated Account has a Billing Address populated.</errorMessage>
+</ValidationRule>
