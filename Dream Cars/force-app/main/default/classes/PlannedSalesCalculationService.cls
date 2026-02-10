@@ -1,46 +1,51 @@
 public class PlannedSalesCalculationService {
-
     public static void getSalesData(List<Planned_Sales__c> plannedSalesList) {
+        if (plannedSalesList == null || plannedSalesList.isEmpty()) return;
+
+        for (Planned_Sales__c ps : plannedSalesList) {
+            ps.Count_of_Cars_Sold__c = 0;
+            ps.Total_Amount_Earned__c = 0;
+        }
 
         Set<Integer> years = new Set<Integer>();
         Set<Integer> months = new Set<Integer>();
         Set<String> carTypes = new Set<String>();
 
-        for (Planned_Sales__c plannedSales : plannedSalesList) {
-            years.add(plannedSales.Year__c);
-            months.add(plannedSales.Month__c);
-            carTypes.add(plannedSales.Car_Type__c);
+        for (Planned_Sales__c ps : plannedSalesList) {
+            if (ps.Year__c != null) years.add(ps.Year__c.intValue());
+            if (ps.Month__c != null) months.add(ps.Month__c.intValue());
+            if (ps.Car_Type__c != null) carTypes.add(ps.Car_Type__c);
         }
 
-        List<AggregateResult> result = [SELECT 
-                                        MONTH(Opportunity.CloseDate) mnth, 
-                                        YEAR(Opportunity.CloseDate) yr, 
-                                        Product2.Condition__c tp, 
-                                        SUM(TotalPrice) totalAmount, 
-                                        COUNT(Id) totalDeals 
-                                  FROM OpportunityLineItem 
-                                  WHERE Opportunity.StageName = 'Closed Won' 
-                                  AND Product2.Condition__c IN :carTypes 
-                                  AND YEAR(Opportunity.CloseDate) IN :years 
-                                  AND MONTH(Opportunity.CloseDate) IN :months
-                                  WITH USER_MODE
-                                  GROUP BY YEAR(Opportunity.CloseDate), MONTH(Opportunity.CloseDate), Product2.Condition__c];
+        List<AggregateResult> results = [SELECT 
+                                            CALENDAR_MONTH(Opportunity.CloseDate) mnth, 
+                                            CALENDAR_YEAR(Opportunity.CloseDate) yr, 
+                                            Product2.Condition__c tp, 
+                                            SUM(TotalPrice) totalAmount, 
+                                            COUNT(Id) totalDeals 
+                                        FROM OpportunityLineItem 
+                                        WHERE Opportunity.StageName = 'Closed Won' 
+                                        AND Product2.Condition__c IN :carTypes 
+                                        AND CALENDAR_YEAR(Opportunity.CloseDate) IN :years 
+                                        AND CALENDAR_MONTH(Opportunity.CloseDate) IN :months
+                                        GROUP BY CALENDAR_YEAR(Opportunity.CloseDate), 
+                                                 CALENDAR_MONTH(Opportunity.CloseDate), 
+                                                 Product2.Condition__c];
+
+        System.debug('>>> SOQL Results: ' + results);
 
         Map<String, AggregateResult> resultDataMap = new Map<String, AggregateResult>();
-        for (AggregateResult ar : result) {
-            String key = String.valueOf((Integer)ar.get('yr')) + '-' + String.valueOf((Integer)ar.get('mnth')) + '-' + (String)ar.get('tp');
+        for (AggregateResult ar : results) {
+            String key = ar.get('yr') + '-' + ar.get('mnth') + '-' + ar.get('tp');
             resultDataMap.put(key, ar);
         }
 
         for (Planned_Sales__c ps : plannedSalesList) {
-            String key = String.valueOf(ps.Year__c) + '-' + String.valueOf(ps.Month__c) + '-' + ps.Car_Type__c;
+            String key = ps.Year__c.intValue() + '-' + ps.Month__c.intValue() + '-' + ps.Car_Type__c;
             if (resultDataMap.containsKey(key)) {
                 AggregateResult ar = resultDataMap.get(key);
                 ps.Total_Amount_Earned__c = (Decimal)ar.get('totalAmount');
                 ps.Count_of_Cars_Sold__c = (Integer)ar.get('totalDeals');
-            } else {
-                ps.Total_Amount_Earned__c = 0;
-                ps.Count_of_Cars_Sold__c = 0;
             }
         }
     }
