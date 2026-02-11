@@ -23,16 +23,16 @@ public class PlannedSalesCalculationService {
                                             Product2.Condition__c tp, 
                                             SUM(TotalPrice) totalAmount, 
                                             COUNT(Id) totalDeals 
-                                        FROM OpportunityLineItem 
+                                        FROM OpportunityLineItem
                                         WHERE Opportunity.StageName = 'Closed Won' 
                                         AND Product2.Condition__c IN :carTypes 
                                         AND CALENDAR_YEAR(Opportunity.CloseDate) IN :years 
                                         AND CALENDAR_MONTH(Opportunity.CloseDate) IN :months
+                                        WITH USER_MODE
                                         GROUP BY CALENDAR_YEAR(Opportunity.CloseDate), 
                                                  CALENDAR_MONTH(Opportunity.CloseDate), 
                                                  Product2.Condition__c];
 
-        System.debug('>>> SOQL Results: ' + results);
 
         Map<String, AggregateResult> resultDataMap = new Map<String, AggregateResult>();
         for (AggregateResult ar : results) {
