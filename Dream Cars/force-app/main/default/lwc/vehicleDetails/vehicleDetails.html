@@ -1,0 +1,12 @@
+<template>
+    <div class="slds-m-top_large slds-p-around_medium slds-theme_shade">
+        <h3 class="slds-text-heading_medium">Vehicle Details</h3>
+        <template if:true={vehicle}>
+            <p><strong>Make:</strong> {vehicle.make}</p>
+            <p><strong>Model:</strong> {vehicle.model}</p>
+            <p><strong>Year:</strong> {vehicle.year}</p>
+            <p><strong>Distance (Odometer):</strong> {vehicle.distance} km</p>
+            <p><strong>Location:</strong> Lat: {vehicle.latitude}, Long: {vehicle.longitude}</p>
+        </template>
+    </div>
+</template>

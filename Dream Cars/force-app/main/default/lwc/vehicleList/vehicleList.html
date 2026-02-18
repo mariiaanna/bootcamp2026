@@ -1,0 +1,16 @@
+<template>
+    <template if:true={errorMessage}>
+        <div class="slds-text-color_error">{errorMessage}</div>
+    </template>
+    
+    <div class="slds-grid slds-wrap">
+        <template for:each={vehicles} for:item="v">
+            <div key={v.id} class="slds-col slds-size_1-of-3 slds-p-around_x-small">
+                <div class="slds-box slds-box_link slds-theme_default" onclick={handleSelect} data-id={v.id}>
+                    <p><strong>{v.make} {v.model}</strong></p>
+                    <p>Year: {v.year}</p>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>
